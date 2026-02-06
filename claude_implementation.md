@@ -115,9 +115,12 @@ Lab1_StreamingDataforPMwithLinRegAlerts/
 │   ├── DataStreamVisualization_workshop.ipynb  # Existing workshop
 │   └── PredictiveMaintenance_LinReg.ipynb      # NEW: Main PM notebook
 ├── logs/
-│   └── alert_log.csv                  # Alert/Error event logs
+│   └── alert_log.csv                  # Combined alert/error log (all robots, with robot column)
 └── alerts/
-    └── [alert images saved here]      # Alert visualization images
+    ├── regression_lines_Robot_A.png   # Per-robot regression plots (x4)
+    ├── residual_histograms_Robot_A.png # Per-robot residual histograms (x4)
+    ├── residual_boxplots_Robot_A.png  # Per-robot residual boxplots (x4)
+    └── alert_dashboard_Robot_A.png    # Per-robot alert dashboards (x4)
 ```
 
 ---
@@ -248,44 +251,50 @@ class AlertSystem:
 
 3. **Data Ingestion**
    - Ingest training data (with FORCE_REINGEST option)
-   - Query training data from database
+   - Define `ROBOT_CONFIG` dict (Robot A=8, B=10, C=12, D=12 axes)
+   - Query training data per robot via `query_training_data(conn, robot_name=...)`
+   - `dropna(axis=1, how='all')` to remove NaN-only axis columns per robot
+   - Store in `training_data` dict (robot_name -> DataFrame)
 
-4. **Model Training**
-   - Train linear regression for all 12 axes
-   - Display model parameters summary
-   - Save model parameters to CSV
+4. **Model Training (Per-Robot)**
+   - Loop over `training_data`, create `RobotRegressionModels()` per robot
+   - Train and store in `robot_models` dict (robot_name -> RobotRegressionModels)
+   - Collect model summaries with `robot` column
+   - Save combined `model_params.csv` with `robot` column
 
-5. **Regression Visualization**
-   - 3x4 grid of scatter plots with regression lines
-   - Save to `alerts/regression_lines.png`
+5. **Regression Visualization (Per-Robot)**
+   - Loop over robots, generate 3x4 scatter + regression line plots
+   - Save as `alerts/regression_lines_Robot_A.png`, etc. (one per robot)
 
-6. **Residual Analysis**
-   - Residual histograms (3x4 grid)
-   - Residual boxplots for outlier identification
-   - Detailed residual statistics table
+6. **Residual Analysis (Per-Robot)**
+   - Per-robot residual histograms (3x4 grid) saved as `residual_histograms_Robot_A.png`, etc.
+   - Per-robot residual boxplots saved as `residual_boxplots_Robot_A.png`, etc.
+   - Combined residual statistics table with `robot` column
 
 7. **Threshold Configuration**
    - Define MinC=2.0, MaxC=3.0, T=30
    - Display justification
-   - Show actual threshold values per axis
+   - Show actual threshold values per robot per axis
 
-8. **Alert System Setup**
-   - Initialize AlertSystem with models and thresholds
+8. **Alert System Setup (Per-Robot)**
+   - Loop over `robot_models`, create `AlertSystem(models, thresholds)` per robot
+   - Store in `robot_alert_systems` dict (robot_name -> AlertSystem)
    - Create logs/ and alerts/ directories
 
-9. **Streaming Test Simulation**
-   - Load test data (`robots_combined_v2.csv`) - 200,000 rows total
-   - Process ALL test data through alert system (no sampling)
-   - Display detection results and summary
+9. **Streaming Test Simulation (Per-Robot)**
+   - Load test data (`robots_combined_v2.csv`) once as `df_test_all` - 200,000 rows total
+   - Loop over robots: filter by robot name, `reset_index`, `dropna`, process through robot's own `AlertSystem`
+   - Display combined detection results and summary grouped by `['robot', 'axis', 'event_type']`
    - Expected: mostly ALERT events (sustained 2-3 sigma drift), only 1-2 ERROR events per robot
 
 10. **Event Logging**
-    - Save alert log to CSV
+    - Merge all robot alert logs into combined `alert_log.csv` with `robot` column
     - Display log preview
 
-11. **Dashboard & Summary**
-    - Generate comprehensive 3x4 alert dashboard
-    - Display final summary statistics
+11. **Dashboard & Summary (Per-Robot)**
+    - Generate per-robot 3x4 alert dashboards saved as `alert_dashboard_Robot_A.png`, etc.
+    - Per-robot breakdown: fitted models, train/test counts, alert/error counts
+    - Combined totals
     - Close database connection
 
 ---
@@ -424,10 +433,16 @@ All components support axes 1-12:
 - Alert system monitors all 12 axes
 - Visualizations use 3x4 grid layout
 
+### Per-Robot Architecture
+- Each robot gets its own `RobotRegressionModels` and `AlertSystem` instance
+- `dropna(axis=1, how='all')` in the notebook prevents NaN-column crashes for robots with fewer axes
+- Combined CSV outputs (`model_params.csv`, `alert_log.csv`) include a `robot` column
+- Per-robot PNGs: `regression_lines_Robot_A.png`, `alert_dashboard_Robot_A.png`, etc.
+
 ### Visualization Approach
-- **No individual axis plots** - Only comprehensive views are generated
-- Dashboard shows all 12 axes in a single 3x4 grid
-- Regression and residual plots also use 3x4 layout
+- **No individual axis plots** - Only comprehensive 3x4 grid views per robot
+- Each robot gets its own regression, residual, and dashboard plots
+- Regression and residual plots use 3x4 layout (unfitted axes show "No Data")
 
 ### Data Generation (`data/generate_datasets.py`)
 - Source: `RMBR4-2_export_test.csv` (Robot A raw current data, 8 axes, ~39K rows)

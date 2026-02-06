@@ -79,12 +79,13 @@ This project extends a streaming data pipeline with machine learning models to i
                       |
                       v
 +-----------------------------------------------+
-|  Outputs                                      |
-|  - logs/alert_log.csv                         |
-|  - alerts/alert_dashboard.png                 |
-|  - alerts/regression_lines.png                |
-|  - alerts/residual_histograms.png             |
-|  - alerts/residual_boxplots.png               |
+|  Outputs (per robot)                          |
+|  - data/model_params.csv (combined w/ robot)  |
+|  - logs/alert_log.csv (combined w/ robot)     |
+|  - alerts/regression_lines_Robot_*.png (x4)   |
+|  - alerts/residual_histograms_Robot_*.png (x4)|
+|  - alerts/residual_boxplots_Robot_*.png (x4)  |
+|  - alerts/alert_dashboard_Robot_*.png (x4)    |
 +-----------------------------------------------+
 ```
 
@@ -98,29 +99,31 @@ This project extends a streaming data pipeline with machine learning models to i
 - Optimized batch inserts using `psycopg2.execute_values`
 - Supports re-ingestion with `FORCE_REINGEST` flag
 
-### 2. Per-Axis Linear Regression Models
-- Univariate regression (time index vs. current) for up to 12 axes
-- Graceful handling of missing axes per robot
-- Model parameters (slope, intercept, residual_std) saved to CSV
+### 2. Per-Robot, Per-Axis Linear Regression Models
+- Separate `RobotRegressionModels` instance trained per robot
+- Univariate regression (time index vs. current) for each robot's active axes
+- Graceful handling of missing axes via `dropna(axis=1, how='all')`
+- Combined model parameters CSV with `robot` column
 
 ### 3. Residual-Based Threshold Discovery
 - Histogram, boxplot, and statistical summary visualizations
 - Data-driven threshold calibration using residual standard deviation
 - Per-axis threshold scaling for sensitivity appropriate to each axis
 
-### 4. Streaming Alert Detection
-- Sequential processing simulating real-time data flow
+### 4. Per-Robot Streaming Alert Detection
+- Separate `AlertSystem` instance per robot
+- Test data filtered by robot name and processed through robot's own models
 - Per-axis deviation tracking with sustained-duration logic
 - Two severity levels: ALERT (early warning) and ERROR (critical)
 
-### 5. Comprehensive Visualization
-- Regression line plots for all 12 axes (3x4 grid)
-- Residual distribution histograms and boxplots
-- Alert dashboard with event markers and duration annotations
+### 5. Per-Robot Visualization
+- Per-robot regression line plots (3x4 grid) saved as `regression_lines_Robot_A.png`, etc.
+- Per-robot residual distribution histograms and boxplots
+- Per-robot alert dashboard with event markers and duration annotations
 
 ### 6. Event Logging and Reporting
-- CSV-based alert log with full event metadata
-- Summary statistics by axis and event type
+- Combined CSV alert log with `robot` column for correct attribution
+- Summary statistics grouped by robot, axis, and event type
 - Database-ready alert records
 
 ---
@@ -294,7 +297,7 @@ All triggered events are logged with: timestamp, axis, event type, deviation mag
 
 ### Visualization
 
-A comprehensive 3x4 dashboard (`alerts/alert_dashboard.png`) displays all 12 axes with ALERT/ERROR markers overlaid on the time series, providing a single view of fleet health.
+Per-robot 3x4 dashboards (`alerts/alert_dashboard_Robot_A.png`, etc.) display each robot's axes with ALERT/ERROR markers overlaid on the time series, providing a clear view of individual robot health.
 
 ---
 
@@ -392,12 +395,12 @@ Execute all cells in order. The notebook will:
 
 | File | Location | Description |
 |------|----------|-------------|
-| `model_params.csv` | `data/` | Trained model parameters per axis |
-| `alert_log.csv` | `logs/` | All ALERT and ERROR events with metadata |
-| `regression_lines.png` | `alerts/` | Regression line plots (3x4 grid) |
-| `residual_histograms.png` | `alerts/` | Residual distribution analysis |
-| `residual_boxplots.png` | `alerts/` | Outlier identification boxplots |
-| `alert_dashboard.png` | `alerts/` | Comprehensive alert dashboard (3x4 grid) |
+| `model_params.csv` | `data/` | Combined model parameters with `robot` column |
+| `alert_log.csv` | `logs/` | Combined ALERT/ERROR events for all robots with `robot` column |
+| `regression_lines_Robot_A.png` (x4) | `alerts/` | Per-robot regression line plots (3x4 grid) |
+| `residual_histograms_Robot_A.png` (x4) | `alerts/` | Per-robot residual distribution analysis |
+| `residual_boxplots_Robot_A.png` (x4) | `alerts/` | Per-robot outlier identification boxplots |
+| `alert_dashboard_Robot_A.png` (x4) | `alerts/` | Per-robot alert dashboard (3x4 grid) |
 
 ---
 
@@ -429,13 +432,13 @@ Lab1_StreamingDataforPMwithLinRegAlerts/
 |   |-- model_params.csv                         # Trained model parameters (generated)
 |
 |-- logs/                                        # Log files
-|   |-- alert_log.csv                            # Alert/Error event log
+|   |-- alert_log.csv                            # Combined alert/error log (all robots)
 |
-|-- alerts/                                      # Alert visualizations
-|   |-- regression_lines.png                     # Regression plots (3x4 grid)
-|   |-- residual_histograms.png                  # Residual analysis
-|   |-- residual_boxplots.png                    # Outlier detection
-|   |-- alert_dashboard.png                      # Comprehensive dashboard (3x4 grid)
+|-- alerts/                                      # Alert visualizations (per robot)
+|   |-- regression_lines_Robot_A.png             # Per-robot regression plots (x4)
+|   |-- residual_histograms_Robot_A.png          # Per-robot residual analysis (x4)
+|   |-- residual_boxplots_Robot_A.png            # Per-robot outlier detection (x4)
+|   |-- alert_dashboard_Robot_A.png              # Per-robot alert dashboard (x4)
 |
 |-- .venv/                                       # Virtual environment (not tracked)
 ```
