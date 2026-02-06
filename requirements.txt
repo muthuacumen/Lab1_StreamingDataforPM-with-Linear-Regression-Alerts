@@ -1,0 +1,27 @@
+# Core Dependencies
+pandas>=2.0.0
+numpy>=1.24.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Database
+psycopg2-binary>=2.9.0
+
+# Jupyter
+jupyter>=1.0.0
+ipython>=8.0.0
+notebook>=7.0.0
+
+# GUI Backend for separate plot windows (required for real-time visualization)
+PyQt5>=5.15.0
+
+# Alternative backends (uncomment if PyQt5 doesn't work):
+# PyQt6>=6.0.0
+# tk (usually included with Python)
+
+# Machine Learning (for degradation analysis)
+scikit-learn>=1.3.0
+
+#Optional: GPU Acceleration (uncomment for CUDA support)
+# cupy-cuda12x>=12.0.0  # For CUDA 12.x
+# cupy-cuda11x>=11.0.0  # For CUDA 11.x

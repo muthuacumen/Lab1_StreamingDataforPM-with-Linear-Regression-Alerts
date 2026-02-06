@@ -1,0 +1,19 @@
+# Virtual environment
+.venv/
+venv/
+
+# Claude Code
+.claude/
+
+# Windows artifacts
+nul
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
