@@ -99,6 +99,15 @@ def create_training_table(conn):
     print("Training data table created/verified")
 
 
+def drop_training_table(conn):
+    """Drop the training table so it can be recreated with the current schema."""
+    cursor = conn.cursor()
+    cursor.execute("DROP TABLE IF EXISTS robot_training_data CASCADE;")
+    conn.commit()
+    cursor.close()
+    print("Training table dropped")
+
+
 def clear_training_table(conn):
     """Clear all data from training table."""
     cursor = conn.cursor()

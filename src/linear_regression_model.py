@@ -55,7 +55,7 @@ class AxisRegressionModel:
         """
         # Reshape for sklearn
         X = np.array(time_index).reshape(-1, 1)
-        y = np.array(axis_values)
+        y = pd.to_numeric(pd.Series(axis_values), errors='coerce').values
 
         # Remove NaN values
         valid_mask = ~np.isnan(y)
@@ -184,11 +184,14 @@ class RobotRegressionModels:
                 axis_values = df_training[axis_name].values
 
                 self.models[axis_name].fit(time_index, axis_values)
-                params[axis_name] = self.models[axis_name].get_params()
 
-                print(f"  Slope: {params[axis_name]['slope']:.6f}")
-                print(f"  Intercept: {params[axis_name]['intercept']:.6f}")
-                print(f"  Residual Std: {params[axis_name]['residual_std']:.6f}")
+                if self.models[axis_name].is_fitted:
+                    params[axis_name] = self.models[axis_name].get_params()
+                    print(f"  Slope: {params[axis_name]['slope']:.6f}")
+                    print(f"  Intercept: {params[axis_name]['intercept']:.6f}")
+                    print(f"  Residual Std: {params[axis_name]['residual_std']:.6f}")
+                else:
+                    print(f"  Skipped (insufficient data)")
 
         self.training_stats = params
         print("\n" + "=" * 60)
