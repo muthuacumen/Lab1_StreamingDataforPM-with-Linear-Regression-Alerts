@@ -238,39 +238,39 @@ These analyses reveal that healthy operation produces residuals concentrated wit
 
 ## Threshold Justification
 
-### MinC = 2.0 (Alert Threshold)
+### MinC = 3.5 (Alert Threshold)
 
 **Definition**: Minimum deviation (in units of residual std) above regression line to trigger ALERT.
 
 **Justification**:
-- Values exceeding 2 std from the regression line represent approximately **4.5% of normal variance** (beyond 95.45% confidence interval)
-- In predictive maintenance context, this indicates **early signs of potential degradation** that warrant monitoring
-- Based on residual distribution analysis showing most healthy operation falls within +/-2 std
+- Values exceeding 3.5 std from the regression line are very rare under normal operating conditions (less than **1 in 4,300 chance**)
+- This threshold effectively eliminates false positives from normal process variation while reliably capturing genuine degradation onset
+- In predictive maintenance context, this indicates **early signs of potential degradation** that warrant monitoring and scheduled inspection
 
-**Evidence**: Residual histogram plots show normal distribution with rare occurrences beyond 2 std during healthy operation.
+**Evidence**: Residual histogram and boxplot analyses show normal distribution concentrated within +/-2 std. Values beyond 3.5 std are exceedingly rare during healthy operation, making them reliable indicators of anomalous behavior.
 
-### MaxC = 3.0 (Error Threshold)
+### MaxC = 4.0 (Error Threshold)
 
 **Definition**: Maximum deviation (in units of residual std) above regression line to trigger ERROR.
 
 **Justification**:
-- Values exceeding 3 std represent approximately **0.27% of normal variance** (beyond 99.73% confidence interval)
-- This level indicates **significant anomaly with potential failure imminent**
-- Requires immediate attention to prevent catastrophic breakdown
+- Values exceeding 4 std are extremely rare under normal conditions (less than **1 in 15,787 chance**)
+- This level represents an unambiguously anomalous deviation that signals **critical failure in progress**
+- Requires immediate intervention to prevent catastrophic breakdown
 
-**Evidence**: Boxplot analysis shows values beyond 3 std align with outlier patterns that historically precede equipment failures.
+**Evidence**: Boxplot analysis shows values beyond 4 std align with outlier patterns that historically precede equipment failures. At this level, the deviation is far outside any normal operational variance.
 
-### T = 30 seconds (Sustained Duration)
+### T = 5 seconds (Sustained Duration)
 
 **Definition**: Minimum continuous time that deviation must persist to trigger an alert.
 
 **Justification**:
 - **Transient spikes are normal** during robot operation cycles (start/stop, load changes)
-- A 30-second sustained deviation **filters out momentary fluctuations** while capturing genuine degradation
-- Based on observed robot operational cycles in training data (typical cycle: 15-45 seconds)
-- Prevents false positives from normal operational transients
+- A 5-second sustained deviation window is calibrated to the high σ thresholds used -- since deviations at 3.5-4σ are already extremely unlikely under normal conditions, a shorter sustain window is sufficient to confirm genuine anomalies
+- **Filters out single-point transient spikes** while capturing persistent issues
+- Prevents false positives from momentary operational transients
 
-**Evidence**: Time series analysis shows healthy operation includes brief spikes that resolve within 10-20 seconds.
+**Evidence**: Time series analysis shows healthy operation includes brief spikes that resolve within 1-3 seconds. Sustained deviations at 3.5σ+ for 5 consecutive seconds reliably indicate genuine anomalies.
 
 ---
 

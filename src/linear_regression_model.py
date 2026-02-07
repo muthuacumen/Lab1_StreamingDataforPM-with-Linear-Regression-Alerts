@@ -308,7 +308,7 @@ class RobotRegressionModels:
         plt.tight_layout()
 
         if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches='tight')
+            fig.savefig(save_path, dpi=150, bbox_inches='tight')
             print(f"Regression plot saved to: {save_path}")
 
         return fig
@@ -377,7 +377,7 @@ class RobotRegressionModels:
         plt.tight_layout()
 
         if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches='tight')
+            fig.savefig(save_path, dpi=150, bbox_inches='tight')
             print(f"Residual analysis plot saved to: {save_path}")
 
         return fig
@@ -429,7 +429,7 @@ class RobotRegressionModels:
         plt.tight_layout()
 
         if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches='tight')
+            fig.savefig(save_path, dpi=150, bbox_inches='tight')
             print(f"Residual boxplot saved to: {save_path}")
 
         return fig

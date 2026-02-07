@@ -31,18 +31,18 @@ class AlertThresholds:
         Minimum sustained duration in seconds
     """
 
-    def __init__(self, MinC=2.0, MaxC=3.0, T=30):
+    def __init__(self, MinC=3.5, MaxC=4.0, T=5):
         """
         Initialize thresholds.
 
         Parameters:
         -----------
         MinC : float
-            Minimum deviation for ALERT (default: 2.0 * residual_std)
+            Minimum deviation for ALERT (default: 3.5 * residual_std)
         MaxC : float
-            Maximum deviation for ERROR (default: 3.0 * residual_std)
+            Maximum deviation for ERROR (default: 4.0 * residual_std)
         T : int
-            Minimum sustained duration in seconds (default: 30)
+            Minimum sustained duration in seconds (default: 5)
         """
         self.MinC = MinC
         self.MaxC = MaxC
@@ -388,7 +388,7 @@ class AlertSystem:
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        plt.savefig(save_path, dpi=150, bbox_inches='tight')
+        fig.savefig(save_path, dpi=150, bbox_inches='tight')
         print(f"Dashboard saved to: {save_path}")
 
         return fig
@@ -416,7 +416,7 @@ if __name__ == '__main__':
     models.train_all_axes(df_test)
 
     # Test alert system
-    thresholds = AlertThresholds(MinC=2.0, MaxC=3.0, T=5)
+    thresholds = AlertThresholds(MinC=3.5, MaxC=4.0, T=5)
     alert_system = AlertSystem(models, thresholds)
 
     alerts = alert_system.process_streaming_data(df_test)

@@ -72,9 +72,9 @@ db_config = {
 - [x] Identify outlier patterns
 
 ### 5. Threshold Discovery & Justification (2 points)
-- [x] Define **MinC**: Minimum current deviation for ALERT (2.0σ)
-- [x] Define **MaxC**: Maximum current deviation for ERROR (3.0σ)
-- [x] Define **T**: Minimum continuous time (30 seconds) for sustained deviation
+- [x] Define **MinC**: Minimum current deviation for ALERT (3.5σ)
+- [x] Define **MaxC**: Maximum current deviation for ERROR (4.0σ)
+- [x] Define **T**: Minimum continuous time (5 seconds) for sustained deviation
 - [x] Document justification in README.md with evidence from analysis
 
 ### 6. Alerts & Errors Implementation (2 points)
@@ -110,6 +110,7 @@ Lab1_StreamingDataforPMwithLinRegAlerts/
 │   ├── StreamingSimulator.py          # Existing streaming module
 │   ├── linear_regression_model.py     # Linear regression models
 │   ├── alert_system.py                # Alert/Error detection
+│   ├── dashboard_generator.py         # Interactive HTML dashboard generator
 │   └── database_utils.py              # Database utilities
 ├── notebook/
 │   ├── DataStreamVisualization_workshop.ipynb  # Existing workshop
@@ -120,7 +121,8 @@ Lab1_StreamingDataforPMwithLinRegAlerts/
     ├── regression_lines_Robot_A.png   # Per-robot regression plots (x4)
     ├── residual_histograms_Robot_A.png # Per-robot residual histograms (x4)
     ├── residual_boxplots_Robot_A.png  # Per-robot residual boxplots (x4)
-    └── alert_dashboard_Robot_A.png    # Per-robot alert dashboards (x4)
+    ├── alert_dashboard_Robot_A.png    # Per-robot alert dashboards (x4)
+    └── alert_dashboard.html           # Interactive HTML dashboard (all robots)
 ```
 
 ---
@@ -198,7 +200,7 @@ AXIS_NAMES = ['axis_1', 'axis_2', 'axis_3', 'axis_4',
 
 # Threshold configuration class:
 class AlertThresholds:
-    def __init__(self, MinC=2.0, MaxC=3.0, T=30):
+    def __init__(self, MinC=3.5, MaxC=4.0, T=5):
         self.MinC = MinC   # Minimum deviation for ALERT (σ multiplier)
         self.MaxC = MaxC   # Maximum deviation for ERROR (σ multiplier)
         self.T = T         # Minimum sustained duration in seconds
@@ -233,11 +235,34 @@ class AlertSystem:
 
 **Note:** Individual axis alert plotting methods were removed. Only the comprehensive dashboard visualization is provided.
 
+### Dashboard Generator
+
+**File: `src/dashboard_generator.py`**
+
+```python
+def generate_html_dashboard(alert_log_path, output_html_path) -> str | None:
+    """Read alert_log.csv, generate self-contained HTML dashboard, return output path.
+
+    Returns absolute path to generated HTML, or None if no data.
+    Uses Plotly.js from CDN -- no additional Python dependencies.
+
+    Dashboard includes:
+    - Summary cards (Warnings, Critical Alerts, Total Events, Robots Monitored)
+    - Robot Health Overview table with status badges and recommended actions
+    - Stacked bar chart: Anomaly Count by Robot
+    - Stacked bar chart: Most Affected Axes (sorted by severity)
+    - Scatter timeline: Anomaly Timeline with hover details
+    - Filterable/sortable Detailed Event Log table
+
+    All labels use plain maintenance language (Warning/Critical, not ALERT/ERROR).
+    """
+```
+
 ### Phase 4: Main Notebook
 
 **File: `notebook/PredictiveMaintenance_LinReg.ipynb`**
 
-#### Cell Structure (11 cells):
+#### Cell Structure (13 cells):
 
 1. **Imports and Setup**
    - Import libraries and custom modules
@@ -272,7 +297,7 @@ class AlertSystem:
    - Combined residual statistics table with `robot` column
 
 7. **Threshold Configuration**
-   - Define MinC=2.0, MaxC=3.0, T=30
+   - Define MinC=3.5, MaxC=4.0, T=5
    - Display justification
    - Show actual threshold values per robot per axis
 
@@ -291,8 +316,15 @@ class AlertSystem:
     - Merge all robot alert logs into combined `alert_log.csv` with `robot` column
     - Display log preview
 
-11. **Dashboard & Summary (Per-Robot)**
+11. **Dashboard Visualization (Per-Robot PNG)**
     - Generate per-robot 3x4 alert dashboards saved as `alert_dashboard_Robot_A.png`, etc.
+
+12. **Interactive HTML Dashboard**
+    - Generate self-contained HTML dashboard from `alert_log.csv` using `dashboard_generator.py`
+    - Opens automatically in default browser via `webbrowser.open()`
+    - Saved as `alerts/alert_dashboard.html`
+
+13. **Final Summary**
     - Per-robot breakdown: fitted models, train/test counts, alert/error counts
     - Combined totals
     - Close database connection
@@ -420,9 +452,11 @@ Current Status: **Implementation Complete** - All code files created and tested.
 - [x] `src/database_utils.py` - Database connection and utilities (12 axes)
 - [x] `src/linear_regression_model.py` - Regression models for all 12 axes
 - [x] `src/alert_system.py` - Alert/Error detection system (12 axes)
-- [x] `notebook/PredictiveMaintenance_LinReg.ipynb` - Main notebook (11 cells, processes ALL test data)
+- [x] `src/dashboard_generator.py` - Interactive HTML dashboard generator (Plotly.js, self-contained)
+- [x] `notebook/PredictiveMaintenance_LinReg.ipynb` - Main notebook (13 cells, processes ALL test data, generates HTML dashboard)
 - [x] `README.md` - Updated with threshold justification
 - [x] `logs/` and `alerts/` directories created
+- [x] `alerts/alert_dashboard.html` - Interactive HTML dashboard (auto-opens in browser)
 
 ## Key Implementation Details
 
