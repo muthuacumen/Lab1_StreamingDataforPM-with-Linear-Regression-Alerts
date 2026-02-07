@@ -65,7 +65,7 @@ This project extends a streaming data pipeline with machine learning models to i
                v                   |
 +------------------------------+   |
 |  Linear Regression Models    |   |
-|  - 12 axes (per robot)      |   |
+|  - 8-12 axes (per robot)    |   |
 |  - slope, intercept, std    |   |
 +--------------+---------------+   |
                |                   |
@@ -86,6 +86,7 @@ This project extends a streaming data pipeline with machine learning models to i
 |  - alerts/residual_histograms_Robot_*.png (x4)|
 |  - alerts/residual_boxplots_Robot_*.png (x4)  |
 |  - alerts/alert_dashboard_Robot_*.png (x4)    |
+|  - alerts/alert_dashboard.html (interactive)  |
 +-----------------------------------------------+
 ```
 
@@ -125,6 +126,17 @@ This project extends a streaming data pipeline with machine learning models to i
 - Combined CSV alert log with `robot` column for correct attribution
 - Summary statistics grouped by robot, axis, and event type
 - Database-ready alert records
+
+### 7. Interactive HTML Dashboard
+- Self-contained HTML file generated from `alert_log.csv` via `src/dashboard_generator.py`
+- Uses Plotly.js (CDN) for interactive charts -- no additional Python dependencies required
+- Summary cards: total warnings, critical alerts, total events, robots monitored
+- Robot Health Overview table with status badges (Normal / Needs Attention / Critical) and recommended actions
+- Stacked bar charts: anomaly count by robot and most affected axes across all robots
+- Deviation timeline scatter plot showing when anomalies occurred with hover details
+- Detailed event log with robot/type filtering and column sorting
+- Dark-themed responsive layout designed for Plant Maintenance Engineers
+- Auto-opens in default browser after generation
 
 ---
 
@@ -194,7 +206,7 @@ cd data
 python generate_datasets.py
 ```
 
-After regenerating, set `FORCE_REINGEST = True` in the notebook (Cell 3) to reload the database.
+After regenerating, set `FORCE_REINGEST = True` in the notebook (Cell 2) to reload the database.
 
 ---
 
@@ -299,6 +311,8 @@ All triggered events are logged with: timestamp, axis, event type, deviation mag
 
 Per-robot 3x4 dashboards (`alerts/alert_dashboard_Robot_A.png`, etc.) display each robot's axes with ALERT/ERROR markers overlaid on the time series, providing a clear view of individual robot health.
 
+An interactive HTML dashboard (`alerts/alert_dashboard.html`) is also generated from the combined alert log using `src/dashboard_generator.py`. It provides summary cards, a robot health overview table, stacked bar charts (by robot and axis), a deviation timeline, and a filterable/sortable event log -- all powered by Plotly.js (CDN) with no extra Python dependencies. The dashboard auto-opens in the default browser after generation.
+
 ---
 
 ## Prerequisites
@@ -385,11 +399,13 @@ jupyter notebook PredictiveMaintenance_LinReg.ipynb
 Execute all cells in order. The notebook will:
 
 1. Connect to the database and ingest training data
-2. Train linear regression models for each axis
-3. Compute residuals and visualize distributions (histograms, boxplots)
-4. Configure thresholds with justification
-5. Process all test data through the alert system
-6. Log events to CSV and generate the alert dashboard
+2. Train linear regression models for each robot's active axes
+3. Visualize per-robot regression lines (scatter plots with fitted lines)
+4. Compute residuals and visualize distributions (histograms, boxplots)
+5. Configure thresholds with justification
+6. Process all test data through the alert system
+7. Log events to CSV and generate per-robot alert dashboards (PNG)
+8. Generate interactive HTML dashboard and open it in the default browser
 
 ### Output Files
 
@@ -401,6 +417,7 @@ Execute all cells in order. The notebook will:
 | `residual_histograms_Robot_A.png` (x4) | `alerts/` | Per-robot residual distribution analysis |
 | `residual_boxplots_Robot_A.png` (x4) | `alerts/` | Per-robot outlier identification boxplots |
 | `alert_dashboard_Robot_A.png` (x4) | `alerts/` | Per-robot alert dashboard (3x4 grid) |
+| `alert_dashboard.html` | `alerts/` | Interactive HTML dashboard (Plotly.js, auto-opens in browser) |
 
 ---
 
@@ -417,6 +434,7 @@ Lab1_StreamingDataforPMwithLinRegAlerts/
 |   |-- database_utils.py                        # Database connection and ingestion
 |   |-- linear_regression_model.py               # Per-axis linear regression models
 |   |-- alert_system.py                          # Alert/Error detection and logging
+|   |-- dashboard_generator.py                   # Interactive HTML dashboard generator
 |   |-- StreamingSimulator.py                    # Original workshop streaming class
 |
 |-- notebook/                                    # Jupyter notebooks
@@ -439,6 +457,7 @@ Lab1_StreamingDataforPMwithLinRegAlerts/
 |   |-- residual_histograms_Robot_A.png          # Per-robot residual analysis (x4)
 |   |-- residual_boxplots_Robot_A.png            # Per-robot outlier detection (x4)
 |   |-- alert_dashboard_Robot_A.png              # Per-robot alert dashboard (x4)
+|   |-- alert_dashboard.html                     # Interactive HTML dashboard (generated)
 |
 |-- .venv/                                       # Virtual environment (not tracked)
 ```
@@ -465,6 +484,12 @@ Lab1_StreamingDataforPMwithLinRegAlerts/
 | PostgreSQL | Relational database for training data persistence |
 | psycopg2 | PostgreSQL adapter with `execute_values` for batch inserts |
 | Neon.tech | Serverless PostgreSQL hosting |
+
+### Interactive Dashboard
+
+| Technology | Purpose |
+|------------|---------|
+| Plotly.js (CDN) | Interactive charts in the HTML dashboard (no Python install needed) |
 
 ### Environment
 
